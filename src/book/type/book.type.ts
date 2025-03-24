@@ -5,6 +5,10 @@ export class Mock {
     publishers: string[];
     descriptions: string[];
     formats: string[];
+    reviews: {
+        review: string;
+        "review_author": string;
+    }[];
 }
 
 export class Book {
@@ -17,7 +21,10 @@ export class Book {
     format: string;
     isbn: string;
     likes: number;
-    review: number;
+    review: {
+        review: string;
+        "review_author": string;
+    }[];
 }
 
 export class BookDto {

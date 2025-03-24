@@ -1,25 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import { Book, Mock } from "./type/book.type";
-import { InternalServerErrorException } from "@nestjs/common";
 import * as seedrandom from 'seedrandom';
+import randomItem from "random-item";
 
 @Injectable()
 export class BookService {
-    performOperationNTimes(times: number) {
-        try {
-            let number = 0;
-            const rng = seedrandom();
+    calculateLikes(times: number) {
+        let number = 0;
+        const rng = seedrandom();
 
-            const integerPart = Math.floor(times);
-            const fractionalPart = times - integerPart;
+        const integerPart = Math.floor(times);
+        const fractionalPart = times - integerPart;
 
-            for (let i = 0; i < integerPart; i++) number++;
-            if (rng() < fractionalPart) number++;
+        for (let i = 0; i < integerPart; i++) number++;
+        if (rng() < fractionalPart) number++;
 
-            return number;
-        } catch (error) {
-            throw new InternalServerErrorException(error.message);
-        }
+        return number;
+    }
+
+    getReviews(times: number, reviews: { review: string; "review_author": string }[]) {
+        let selectedReviews: { review: string; "review_author": string }[] = [];
+        const rng = seedrandom();
+
+        const integerPart = Math.floor(times);
+        const fractionalPart = times - integerPart;
+
+        for (let i = 0; i < integerPart; i++) selectedReviews.push(randomItem(reviews))
+        if (rng() < fractionalPart) selectedReviews.push(randomItem(reviews))
+
+        return selectedReviews;
     }
 
     async generateBooks(
@@ -32,7 +41,7 @@ export class BookService {
     ): Promise<Book[]> {
         const { book }: { book: Mock } = await import(`./mock/book.${language}`);
         const { faker } = await import(`@faker-js/faker/locale/${language}`);
-        const { titles, authors, genres, publishers, descriptions, formats } = book;
+        const { titles, authors, genres, publishers, descriptions, formats, reviews } = book;
         const books: Book[] = [];
 
         faker.seed(seed);
@@ -47,8 +56,8 @@ export class BookService {
                 description: faker.helpers.arrayElement(descriptions),
                 format: faker.helpers.arrayElement(formats),
                 isbn: faker.commerce.isbn(),
-                likes: this.performOperationNTimes(likes),
-                review: this.performOperationNTimes(review),
+                likes: this.calculateLikes(likes),
+                review: this.getReviews(review, reviews),
             });
         }
 
